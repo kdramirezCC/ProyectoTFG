@@ -1,0 +1,130 @@
+1.1 Diagrama de Casos de Uso
+@startuml
+left to right direction
+actor Visitante
+actor Cliente
+actor Administrador
+
+rectangle "Sistema de reservas de drones" {
+    Visitante --> (Ver catálogo de drones)
+    Visitante --> (Confirmar datos)
+    Visitante --> (Pago online)
+    Visitante --> (Recibir correo de confirmación)
+
+    Cliente --> (Seleccionar dron)
+    Cliente --> (Seleccionar fecha y hora)
+    Cliente --> (Iniciar sesión / Registrarse)
+    Cliente --> (Confirmar datos)
+    Cliente --> (Pago online)
+    Cliente --> (Recibir correo de confirmación)
+
+    Administrador --> (Gestionar drones)
+    Administrador --> (Gestionar reservas)
+    Administrador --> (Gestionar usuarios)
+}
+@enduml
+
+
+1.2 Diagrama de Clases
+
+Descripción:
+Modelo de datos del sistema, con las entidades: Usuario, Dron, Reserva, Servicio y Pago.
+@startuml
+class Usuario {
+  -UsrId: int
+  -nombre: string
+-CIF
+-Dirección
+-email: string
+  -contraseña: string
+ -tipo: string (Cliente, adminitrador)}
+
+class Dron {
+  -DronId: int
+  -modelo: string
+  -tipo: string
+  -precio: float
+  -disponibilidad: boolean}
+
+class Reserva {
+  -ReservaId: int
+-fechaInicio: date
+  -fechaFin: date
+  -hora: time
+-estado: string
+}
+
+
+class Pago {
+  -PagoId: int
+  -monto: float
+  -fecha: date
+  -metodo: string
+-estado: string
+}
+
+Usuario "1" --> "0..*" Reserva
+Dron "1" --> "0..*" Reserva
+Reserva "1" --> "1" Pago
+@enduml
+1.3 Diagrama de Secuencia
+PlantUML:
+@startuml
+actor Usuario
+participant "Web / Frontend" as Web
+participant "Backend / Servidor" as Servidor
+participant "Pasarela de pago" as Pago
+participant "Correo electrónico" as Email
+
+Usuario -> Web: Selecciona dron
+Web -> Servidor: Solicitar disponibilidad
+Servidor --> Web: Mostrar disponibilidad
+Usuario -> Web: Selecciona fecha y hora
+
+alt Usuario registrado
+    Usuario -> Web: Iniciar sesión / Registrarse
+end
+
+Usuario -> Web: Confirmar datos
+Web -> Pago: Procesar pago
+Pago --> Web: Confirmación de pago
+Web -> Servidor: Registrar reserva
+Servidor --> Web: Confirmación
+Web -> Email: Enviar correo de confirmación
+Email --> Usuario: Correo de confirmación
+@enduml
+________________________________________
+ – Modelo de Base de Datos
+Incluye:
+
+•	Tablas creadas
+Tabla: usuarios
+Campo	Tipo	Descripción
+id	INT PK AI	Identificador único
+nombre	VARCHAR(100)	Nombre del usuario
+email	VARCHAR(150)	Email
+contraseña	VARCHAR(255)	Hash de la contraseña
+tipo	ENUM('Visitante','Cliente','Admin')	Rol
+Tabla: drones
+Campo	Tipo
+id	INT PK AI
+modelo	VARCHAR(100)
+tipo	VARCHAR(50)
+precio	DECIMAL(10,2)
+disponibilidad	BOOLEAN
+Tabla: reservas
+Campo	Tipo
+id	INT PK AI
+id_usuario	INT FK
+id_dron	INT FK
+fecha	DATE
+hora	TIME
+estado	VARCHAR(50)
+Tabla: pagos
+Campo	Tipo
+id	INT PK AI
+id_reserva	INT FK
+monto	DECIMAL(10,2)
+fecha	DATE
+metodo	VARCHAR(50)
+estado	VARCHAR(50)
